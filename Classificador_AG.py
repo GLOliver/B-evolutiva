@@ -8,6 +8,8 @@ tam = 16384
 numConfig = 100 #(GLOBAL) Número de configurações
 tamConfig = 35 #(GLOBAL) Tamanho da configuração
 
+#Configuração = Objeto que contem a configuração em sí e o estado que ela deve ter no final
+
 class AG:
     def __init__(self, tamPopulacao, numGeracao):
         self.tamPopulacao = int(tamPopulacao)
@@ -16,10 +18,18 @@ class AG:
         self.populacao = []
         self.configuracoes = []
         
-        self._encodeBaseFour([0,0,0,0,0,1,1])
+        #print(self._encodeBaseFour([3,3,3,3,3,3,3]))
 
-        #self._initPopulacao()
-        #self._initConfigs()
+        print("Iniciando população de regras ...")
+        self._initPopulacao()
+        print("População de regras iniciada ...")
+        self._initConfigs()
+
+        testeConfig = self.configuracoes[0]
+        testePopulacao = self.populacaoInicial[0]
+
+        self._runAutomato(testePopulacao,testeConfig,5)
+
 
     def _initPopulacao(self):
         for i in range(0,self.tamPopulacao):
@@ -43,18 +53,42 @@ class AG:
         print("(RETIRAR) Tamanho da coleção de configurações: ", len(self.configuracoes))
 
     def _encodeBaseFour(self, listBase):
-        baseFour = [0,1,2,3,4,5,7,8]
+        baseFour = [0,1,2,3,4,5,6,7,8]
         res = 0
         numEncode = list(listBase)
         numEncode.reverse()
-        for i,j in enumerate(numEncode):
-            res += baseFour.index(i) * 4**(j)
+        for i in range(0 , len(numEncode)):
+            res += int(numEncode[i]) * 4**int(baseFour[i])
         
-        print("A resposta é: ", res)
-        #return res
+        #print("(RETIRAR)A resposta é: ", res)
+        return res
 
-    def _decodeBaseFour(self, decimal):
-        decimal = 1
+    #def _decodeBaseFour(self, decimal): (IMPLEMENTAR SE FOR PRECISO)
+
+    def _runAutomato(self, regra, config, numTimeStap):
+        for i in range(0,numTimeStap):
+            newConfig = config.copy()
+            print("Configuração original: ", config)
+            #Inserindo os três ultimos nos três primeiros
+            newConfig.insert(0,config[len(config)-1])
+            newConfig.insert(0,config[len(config)-2])
+            newConfig.insert(0,config[len(config)-3])
+            #Adicionando os três primeiros nos três ultimos
+            newConfig.append(config[0])
+            newConfig.append(config[1])
+            newConfig.append(config[2])
+            print("Configuração original(com os 6 valores a mais): ", newConfig)
+            
+            posicao = 0
+            for j in range(3, len(config)+3):
+                newRegra = [newConfig[j-3],newConfig[j-2],newConfig[j-1],newConfig[j],newConfig[j+1],newConfig[j+2],newConfig[j+3]]
+                codeDecimal = self._encodeBaseFour(newRegra) + 1
+                config[posicao] = regra[codeDecimal+1]
+                posicao += 1
+            print(config)
+
+
+
 
 
 #--------------------- Main ----------------
