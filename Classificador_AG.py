@@ -95,6 +95,7 @@ class AG:
     #def _decodeBaseFour(self, decimal): (IMPLEMENTAR SE FOR PRECISO)
 
     def _avaliacao(self, individuo, numIndividuo):
+        const = 0
 
 
     def _runAutomato(self, regra, numRegra, config, numConfig, numTimeStap):
