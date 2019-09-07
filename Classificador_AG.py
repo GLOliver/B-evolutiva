@@ -4,11 +4,16 @@
 import random
 import math
 
-tam = 16384
+tam = 16384 #(GLOBAL) Número de elementos no vetor de regras
 numConfig = 100 #(GLOBAL) Número de configurações
 tamConfig = 35 #(GLOBAL) Tamanho da configuração
 
 #Configuração = Objeto que contem a configuração em sí e o estado que ela deve ter no final
+class Individuo:
+    pass
+
+class Configuracao:
+    pass
 
 class AG:
     def __init__(self, tamPopulacao, numGeracao):
@@ -16,6 +21,7 @@ class AG:
         self.numGeracao = int(numGeracao)
         self.populacaoInicial = []
         self.populacao = []
+        self.configuracoesInicial = []
         self.configuracoes = []
         
         #print(self._encodeBaseFour([3,3,3,3,3,3,3]))
@@ -25,31 +31,54 @@ class AG:
         print("População de regras iniciada ...")
         self._initConfigs()
 
+        self.configuracoes = self.configuracoesInicial.copy()
+
         testeConfig = self.configuracoes[0]
         testePopulacao = self.populacaoInicial[0]
 
-        self._runAutomato(testePopulacao,testeConfig,5)
+        self._runAutomato(testePopulacao.regra,0,testeConfig.config,0,100)
 
 
     def _initPopulacao(self):
-        for i in range(0,self.tamPopulacao):
-            inidividuo = [] #regra quaternaria;
-            inidividuo.append(0) #Fitness inicial(zero) adicionado na primeira posição do array;
-            for j in range(0, tam):
+        for _ in range(0,self.tamPopulacao):
+            regra = [] #regra quaternaria;
+            fitness = 0 #inidividuo.append(0) #Fitness inicial(zero) adicionado na primeira posição do array;
+            for _ in range(0, tam):
                 rdm = random.randint(0, 3)
-                inidividuo.append(rdm)
-            
-            self.populacaoInicial.append(inidividuo)
+                regra.append(rdm)
+            regra.append(0)
+            individuo = Individuo()
+            individuo.regra = regra
+            individuo.fitness = fitness
+            self.populacaoInicial.append(individuo)
         print("(RETIRAR) Tamanho da população inicial: ", len(self.populacaoInicial))
 
     def _initConfigs(self):
-        for i in range(0, numConfig):
+        for _ in range(0, numConfig):
             config = []
-            for j in range(0, tamConfig):
+            for _ in range(0, tamConfig):
                 rdm = random.randint(0, 1)
                 config.append(rdm)
             
-            self.configuracoes.append(config)
+            configuracao = Configuracao()
+            configuracao.config = config
+            cont1 = 0
+            cont0 = 0
+            for i in range(0,len(config)):
+                if (config[i] == 1):
+                    cont1 = cont1 + 1
+                elif (config[i] == 0):
+                    cont0 = cont0 + 1
+            
+            if (cont0 > cont1):
+                configuracao.estadoFinal = 0
+                configuracao.qtd = cont0
+            else:
+                configuracao.estadoFinal = 1
+                configuracao.qtd = cont1                
+
+            configuracao.nota = 0
+            self.configuracoesInicial.append(configuracao)
         print("(RETIRAR) Tamanho da coleção de configurações: ", len(self.configuracoes))
 
     def _encodeBaseFour(self, listBase):
@@ -65,10 +94,20 @@ class AG:
 
     #def _decodeBaseFour(self, decimal): (IMPLEMENTAR SE FOR PRECISO)
 
-    def _runAutomato(self, regra, config, numTimeStap):
-        for i in range(0,numTimeStap):
+    def _avaliacao(self, individuo, numIndividuo):
+
+
+    def _runAutomato(self, regra, numRegra, config, numConfig, numTimeStap):
+        """ print(config)
+        print(self.configuracoes[numConfig].config)
+        print(self.configuracoes[numConfig].estadoFinal)
+        print(self.configuracoes[numConfig].nota)
+        print(self.configuracoes[numConfig].qtd) """
+
+        for _ in range(0,numTimeStap):
             newConfig = config.copy()
-            print("Configuração original: ", config)
+            regra.reverse() #Colocando o vetor em ordem lexicográfica
+            #print("Configuração original: ", config)
             #Inserindo os três ultimos nos três primeiros
             newConfig.insert(0,config[len(config)-1])
             newConfig.insert(0,config[len(config)-2])
@@ -77,17 +116,34 @@ class AG:
             newConfig.append(config[0])
             newConfig.append(config[1])
             newConfig.append(config[2])
-            print("Configuração original(com os 6 valores a mais): ", newConfig)
+            #print("Configuração original(com os 6 valores a mais): ", newConfig)
             
             posicao = 0
             for j in range(3, len(config)+3):
-                newRegra = [newConfig[j-3],newConfig[j-2],newConfig[j-1],newConfig[j],newConfig[j+1],newConfig[j+2],newConfig[j+3]]
-                codeDecimal = self._encodeBaseFour(newRegra) + 1
-                config[posicao] = regra[codeDecimal+1]
+                newSeguimento = [newConfig[j-3],newConfig[j-2],newConfig[j-1],newConfig[j],newConfig[j+1],newConfig[j+2],newConfig[j+3]]
+
+                codeDecimal = self._encodeBaseFour(newSeguimento) + 1
+                config[posicao] = regra[codeDecimal]
                 posicao += 1
-            print(config)
-
-
+            #print(config)
+        self.configuracoes[numConfig].config = config
+        if(self.configuracoes[numConfig].estadoFinal == 0):
+            cont0 = 0
+            for i in range(0,len(config)):
+                if(config[i] == 0):
+                    cont0 = cont0 + 1
+            self.configuracoes[numConfig].nota = cont0
+        else:
+            cont1 = 0
+            for i in range(0,len(config)):
+                if(config[i] == 1):
+                    cont1 = cont1 + 1
+            self.configuracoes[numConfig].nota = cont1
+        print(config)
+        """ print(self.configuracoes[numConfig].config)
+        print(self.configuracoes[numConfig].estadoFinal)
+        print(self.configuracoes[numConfig].nota)
+        print(self.configuracoes[numConfig].qtd) """
 
 
 
