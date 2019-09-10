@@ -7,6 +7,7 @@ import math
 tam = 16384 #(GLOBAL) Número de elementos no vetor de regras
 numConfig = 100 #(GLOBAL) Número de configurações
 tamConfig = 35 #(GLOBAL) Tamanho da configuração
+timeStamp = 100 #(GLOBAL) Numero de vezes que a configuração será submetido a regra (Time Stamp)
 
 #Configuração = Objeto que contem a configuração em sí e o estado que ela deve ter no final
 class Individuo:
@@ -32,11 +33,26 @@ class AG:
         self._initConfigs()
 
         self.configuracoes = self.configuracoesInicial.copy()
+        self.populacao = self.populacaoInicial.copy()
 
         testeConfig = self.configuracoes[0]
         testePopulacao = self.populacaoInicial[0]
 
-        self._runAutomato(testePopulacao.regra,0,testeConfig.config,0,100)
+        print(" ")
+        print("Config: ",self.configuracoes[0].config)
+        print("EstadoFinal: ",self.configuracoes[0].estadoFinal)
+        print("Qtd de numeros certos: ",self.configuracoes[0].nota)
+        print("Qtd de Numeros originais: ",self.configuracoes[0].qtd)
+        self._runAutomato(0,0,timeStamp)
+        print("Config: ",self.configuracoes[0].config)
+        print("EstadoFinal: ",self.configuracoes[0].estadoFinal)
+        print("Qtd de numeros certos: ",self.configuracoes[0].nota)
+        print("Qtd de Numeros originais: ",self.configuracoes[0].qtd)
+        
+        print(" ")
+        print("Fitness: ",self.populacao[0].fitness)
+        self._calcFitness()
+        print("Fitness: ",self.populacao[0].fitness)
 
 
     def _initPopulacao(self):
@@ -79,7 +95,7 @@ class AG:
 
             configuracao.nota = 0
             self.configuracoesInicial.append(configuracao)
-        print("(RETIRAR) Tamanho da coleção de configurações: ", len(self.configuracoes))
+        print("(RETIRAR) Tamanho da coleção de configurações: ", len(self.configuracoesInicial))
 
     def _encodeBaseFour(self, listBase):
         baseFour = [0,1,2,3,4,5,6,7,8]
@@ -98,16 +114,18 @@ class AG:
         const = 0
 
 
-    def _runAutomato(self, regra, numRegra, config, numConfig, numTimeStap):
+    def _runAutomato(self, numRegra, numConfig, numTimeStap):
         """ print(config)
         print(self.configuracoes[numConfig].config)
         print(self.configuracoes[numConfig].estadoFinal)
         print(self.configuracoes[numConfig].nota)
         print(self.configuracoes[numConfig].qtd) """
-
+        regra = self.populacao[numRegra].regra
+        regra.reverse() #Colocando o vetor em ordem lexicográfica
+        config = self.configuracoes[numConfig].config
         for _ in range(0,numTimeStap):
+            #print(i)
             newConfig = config.copy()
-            regra.reverse() #Colocando o vetor em ordem lexicográfica
             #print("Configuração original: ", config)
             #Inserindo os três ultimos nos três primeiros
             newConfig.insert(0,config[len(config)-1])
@@ -140,13 +158,21 @@ class AG:
                 if(config[i] == 1):
                     cont1 = cont1 + 1
             self.configuracoes[numConfig].nota = cont1
-        print(config)
+        
         """ print(self.configuracoes[numConfig].config)
         print(self.configuracoes[numConfig].estadoFinal)
         print(self.configuracoes[numConfig].nota)
         print(self.configuracoes[numConfig].qtd) """
 
+    def _calcFitness(self):
+        for i in range(0, len(self.populacao)):
+            fitness = 0
+            for j in range(0, len(self.configuracoes)):
+                self._runAutomato(i,j,timeStamp)
+                fitness = fitness + self.configuracoes[j].nota
+            self.populacao[i].fitness = fitness
 
+    #def _selecao(self):
 
 #--------------------- Main ----------------
 if __name__ == '__main__':
