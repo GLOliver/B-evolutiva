@@ -21,6 +21,7 @@ class AG:
         self.tamPopulacao = int(tamPopulacao)
         self.numGeracao = int(numGeracao)
         self.populacaoInicial = []
+        self.newpopulacao = []
         self.populacao = []
         self.configuracoesInicial = []
         self.configuracoes = []
@@ -35,7 +36,49 @@ class AG:
         self.configuracoes = self.configuracoesInicial.copy()
         self.populacao = self.populacaoInicial.copy()
 
-        testeConfig = self.configuracoes[0]
+        print(" ")
+        print("Calculando fitness...")
+        self._calcFitness()
+
+        print(" ")   
+        print("Selecionando...")
+        self._selecao()
+
+        print("Melhor fitness: ", self.newpopulacao[0].fitness)
+
+        for m in range(0, self.numGeracao):
+            print("Geração: ",m)
+            for i in range(0, self.tamPopulacao):
+                print(" ")
+                print("Rodando o automato para a regra: ",i)
+                for j in range(0, numConfig):
+                    self._runAutomato(i,j,timeStamp)
+            
+            print(" ")
+            print("Calculando fitness...")
+            self._calcFitness()
+
+            print(" ")   
+            print("Selecionando...")
+            self._selecao()
+
+            print(" ")
+            print("Realizando crossover...")
+            self._crossOver()
+
+            self.populacao = self.newpopulacao
+            self.newpopulacao = []
+
+        print(" ")
+        print("Calculando fitness...")
+        self._calcFitness()
+
+        print(" ")   
+        print("Selecionando...")
+        self._selecao()
+
+        print("Melhor fitness: ", self.newpopulacao[0].fitness)
+        """ testeConfig = self.configuracoes[0]
         testePopulacao = self.populacaoInicial[0]
 
         print(" ")
@@ -50,9 +93,37 @@ class AG:
         print("Qtd de Numeros originais: ",self.configuracoes[0].qtd)
         
         print(" ")
-        print("Fitness: ",self.populacao[0].fitness)
+        print("Calculando fitness...")
         self._calcFitness()
-        print("Fitness: ",self.populacao[0].fitness)
+
+
+        print(" ")
+        for i in range(0,self.tamPopulacao):
+            print("Fitness ",i,":",self.populacao[i].fitness)
+        print(" ")   
+        print("Selecionando...")
+        self._selecao()
+
+        for i in range(0,self.tamPopulacao):
+            print("Fitness ",i,":",self.newpopulacao[i].fitness)
+
+        print(" ")
+        print("Realizando crossover...")
+        self._crossOver()
+        print(" ")
+        print("Calculando fitness...")
+        self._calcFitness()
+
+        for i in range(0,self.tamPopulacao):
+            print("Fitness ",i,":",self.populacao[i].fitness)
+        print(" ")   
+        print("Selecionando...")
+        self._selecao()
+
+        for i in range(0,self.tamPopulacao):
+            print("Fitness ",i,":",self.newpopulacao[i].fitness)
+ """
+        
 
 
     def _initPopulacao(self):
@@ -113,7 +184,6 @@ class AG:
     def _avaliacao(self, individuo, numIndividuo):
         const = 0
 
-
     def _runAutomato(self, numRegra, numConfig, numTimeStap):
         """ print(config)
         print(self.configuracoes[numConfig].config)
@@ -172,7 +242,49 @@ class AG:
                 fitness = fitness + self.configuracoes[j].nota
             self.populacao[i].fitness = fitness
 
-    #def _selecao(self):
+    def _selecao(self):
+        for _ in range(0, self.tamPopulacao):
+
+            num1 = random.randint(0,self.tamPopulacao-1)
+            num2 = random.randint(0,self.tamPopulacao-1)
+
+            fitnessRegra1 = self.populacao[num1].fitness
+            fitnessRegra2 = self.populacao[num2].fitness
+
+            limit1 = (tamConfig*numConfig) - fitnessRegra1
+            limit2 = (tamConfig*numConfig) - fitnessRegra2
+
+            roleta = random.randint(0,(tamConfig*numConfig))
+
+            if (abs(roleta - limit1) >= abs(roleta - limit2)):
+                self.newpopulacao.append(self.populacao[num1])
+            else:
+                self.newpopulacao.append(self.populacao[num2])
+
+    def _crossOver(self):
+        corte = random.randint(0,tam)
+        listaparse1 = []
+        listaparse2 = []
+        m = 0
+        tampop = 0
+        while tampop < len(self.newpopulacao):
+            listaparse1 = []
+            listaparse2 = []
+
+            for i in range(corte, tam):
+                listaparse1.append(self.newpopulacao[m].regra[i])
+                listaparse2.append(self.newpopulacao[m+1].regra[i])
+
+            i = 0
+            for j in range(corte, tam):
+                self.newpopulacao[m].regra[j] = listaparse2[i]
+                self.newpopulacao[m+1].regra[j] = listaparse1[i]
+
+                i = i + 1
+
+            m = m + 2
+            tampop = tampop + 2
+            corte = random.randint(0,tam)
 
 #--------------------- Main ----------------
 if __name__ == '__main__':
